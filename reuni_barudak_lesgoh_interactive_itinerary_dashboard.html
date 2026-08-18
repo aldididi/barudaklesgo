@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REUNI BARUDAK LESGOH! - Jogja Selatan 2026</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Embedded CSS Custom Styles for Strict Container Sizing & Aesthetics */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #F8F6F0;
+            color: #1F2937;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 280px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 320px;
+            }
+        }
+        .tab-btn.active {
+            background-color: #15803D;
+            color: #FFFFFF;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(21, 128, 61, 0.3);
+        }
+        /* Custom scrollbar for smooth internal scrolling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F1F1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C1C1C1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A8A8A8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Chosen Palette: Warm Sand & Emerald Earth -->
+    <!-- Application Structure Plan:
+         Designed an intuitive, multi-view dashboard for the "Reuni Barudak Lesgoh!" trip report:
+         1. Header & Quick Stats: Gives immediate high-level summary (dates, budget, route, participants).
+         2. Tabbed Navigation System:
+            - Ringkasan & Komitmen: Core principles, safety promises, and document verification status.
+            - Interaktif Itinerary: Interactive day-by-day filterable timeline with rain contingency toggle.
+            - Kalkulator & Budget: Interactive budget recalculator (5 vs 6 people) paired with Chart.js visualization.
+            - Rute & Operasional: Visual route cluster diagram, driver shift schedule, and safety protocols.
+            - Shortlist Villa & Wisata: Filterable accommodation cards and logic for eliminated spots.
+            - Kontak & Emergency: One-touch emergency contacts & vendor phone directory.
+         This structure ensures that family members at home can quickly verify safety & budget transparency, while participants can easily explore schedules and details without endless scrolling.
+    -->
+    <!-- Visualization & Content Choices:
+         - Cost Breakdown: Chart.js Doughnut Chart -> Visualizing proportions of transport vs lodging vs food -> Dynamic updates with participant toggle -> HTML canvas.
+         - Cost Category Comparison: Chart.js Horizontal Bar Chart -> Visualizing cost breakdown per person -> Dynamic updates -> HTML canvas.
+         - Interactive Timeline: Dynamic JavaScript tab filter per day with weather contingency switch -> Pure HTML/CSS styled cards.
+         - Interactive Route Map: HTML/CSS styled visual flow (GT Prambanan -> Nglanggeran -> Wonosari -> Tepus) to explain distance efficiency.
+         - Confirmation: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- TOP HEADER / HERO -->
+    <header class="bg-emerald-900 text-white shadow-lg border-b border-emerald-800">
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 bg-emerald-800/80 px-3 py-1 rounded-full text-xs font-semibold tracking-wide text-emerald-200 mb-2 border border-emerald-700">
+                        <span>🚘 REUNI SMK JOGJA SELATAN</span>
+                        <span>•</span>
+                        <span>DRAFT 1 (VERIFIKASI)</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        <span>🚗 REUNI BARUDAK LESGOH!</span>
+                    </h1>
+                    <p class="text-emerald-200 text-sm mt-1">
+                        Eksplorasi Alam, Pantai, & Desa Wisata Gunungkidul | 6 – 9 November 2026
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 bg-emerald-950/60 p-3 rounded-xl border border-emerald-800 text-xs text-emerald-100">
+                    <div class="text-center px-3 py-1 border-r border-emerald-800">
+                        <span class="block text-emerald-400 font-bold">DURASI</span>
+                        <span>4 Hari 3 Malam</span>
+                    </div>
+                    <div class="text-center px-3 py-1 border-r border-emerald-800">
+                        <span class="block text-emerald-400 font-bold">ESTIMASI BIAYA</span>
+                        <span id="header-cost-tag">Rp 2.300.000 / org</span>
+                    </div>
+                    <div class="text-center px-3 py-1">
+                        <span class="block text-emerald-400 font-bold">ARMADA</span>
+                        <span>1 Mobil (2 Driver)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN NAVIGATION TABS -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex overflow-x-auto space-x-2 py-3 no-scrollbar text-xs sm:text-sm font-medium">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active whitespace-nowrap px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2">
+                    <span>📌 Ringkasan & Komitmen</span>
+                </button>
+                <button onclick="switchTab('itinerary')" id="tab-itinerary" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-stone-600 hover:bg-stone-100">
+                    <span>📅 Jadwal Itinerary</span>
+                </button>
+                <button onclick="switchTab('budget')" id="tab-budget" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-stone-600 hover:bg-stone-100">
+                    <span>💰 Kalkulator Biaya</span>
+                </button>
+                <button onclick="switchTab('route')" id="tab-route" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-stone-600 hover:bg-stone-100">
+                    <span>🛣️ Rute & Keamanan</span>
+                </button>
+                <button onclick="switchTab('villas')" id="tab-villas" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-stone-600 hover:bg-stone-100">
+                    <span>🏡 Villa & Destinasi</span>
+                </button>
+                <button onclick="switchTab('contacts')" id="tab-contacts" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-stone-600 hover:bg-stone-100">
+                    <span>📞 Kontak & Darurat</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- ==================== TAB 1: OVERVIEW & KOMITMEN ==================== -->
+        <section id="view-overview" class="space-y-6">
+            <!-- Intro Paragraph -->
+            <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
+                <h2 class="font-bold text-stone-900 text-base mb-1">💡 Maksud & Tujuan Rencana Perjalanan Ini</h2>
+                <p>
+                    Dokumen ini disusun secara terbuka dan mendetail agar dapat dibaca bersama keluarga di rumah. Perjalanan ini bertujuan untuk merawat pertemanan satu angkatan SMK yang sudah terjalin belasan tahun di tengah kesibukan pekerjaan dan keluarga. Lokasi Jogja Selatan dipilih karena suasana alam yang menenangkan, biaya terjangkau, dan jarak tempuh efisien dalam satu mobil.
+                </p>
+            </div>
+
+            <!-- Key Principles Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-100 flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-lg mb-3">
+                            💚
+                        </div>
+                        <h3 class="font-bold text-stone-900 text-base mb-2">Apa yang Kami Cari?</h3>
+                        <ul class="text-xs text-stone-600 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span>Waktu ngobrol santai tanpa sekat agenda padat.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span>Udara segar alam, pedesaan, dan lanskap pantai selatan.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span>Kuliner khas lokal & momen kebersamaan sederhana.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-lg mb-3">
+                            🚫
+                        </div>
+                        <h3 class="font-bold text-stone-900 text-base mb-2">Apa yang TIDAK Kami Cari?</h3>
+                        <ul class="text-xs text-stone-600 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="text-rose-600 font-bold">•</span>
+                                <span>Nightlife, karaoke, klub, atau hiburan malam apapun.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-rose-600 font-bold">•</span>
+                                <span>Keramaian pesta atau agenda larut malam di luar villa.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-rose-600 font-bold">•</span>
+                                <span>Kegiatan berisiko ekstrem tanpa jaminan keamanan.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-100 flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-lg mb-3">
+                            🤝
+                        </div>
+                        <h3 class="font-bold text-stone-900 text-base mb-2">Apa yang Kami Janjikan?</h3>
+                        <ul class="text-xs text-stone-600 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">•</span>
+                                <span>Pulang tepat waktu sesuai jadwal jadwal kepulangan.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">•</span>
+                                <span>Kabar rutin minimal 2x sehari (pagi & malam) ke rumah.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">•</span>
+                                <span>Live location aktif & foto ter-update secara berkala.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Point Kejujuran & Callout Cuti -->
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-start gap-3">
+                    <div class="text-2xl">🚨</div>
+                    <div>
+                        <h4 class="font-bold text-amber-900 text-sm">Poin Kejujuran Mengenai Kepulangan & Cuti Kerja</h4>
+                        <p class="text-xs text-amber-800 mt-1 leading-relaxed">
+                            Rombongan diperkirakan tiba kembali di Cibinong pada <strong>Senin tengah malam (23.30 – 01.00 WIB)</strong>. Oleh karena itu, <strong>seluruh peserta diwajibkan mengambil cuti pada hari Senin & Selasa</strong> agar tidak ada yang terburu-buru masuk kerja dalam kondisi lelah berkendara.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants & Roles Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <div class="p-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-bold text-stone-900 text-base">👥 Peserta & Pembagian Peran Operasional</h3>
+                        <p class="text-xs text-stone-500">Seluruh nomor kontak dapat dihubungi oleh pihak keluarga kapan saja.</p>
+                    </div>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-semibold w-fit">Total 5-6 Peserta</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-stone-700">
+                        <thead class="bg-stone-50 text-stone-900 uppercase font-semibold border-b border-stone-200">
+                            <tr>
+                                <th class="py-3 px-4">Nama</th>
+                                <th class="py-3 px-4">Peran Operasional Dalam Trip</th>
+                                <th class="py-3 px-4">Kontak / WA</th>
+                                <th class="py-3 px-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-stone-100">
+                            <tr class="hover:bg-stone-50">
+                                <td class="py-3 px-4 font-bold text-stone-900">Iqbal (Mylo)</td>
+                                <td class="py-3 px-4">Koordinator Trip & Pemilik Mobil</td>
+                                <td class="py-3 px-4 font-mono text-emerald-700">082297009524</td>
+                                <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">FIX</span></td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="py-3 px-4 font-bold text-stone-900">Wendy</td>
+                                <td class="py-3 px-4">Driver Shift 1 (Cibinong – Rest Area Batang)</td>
+                                <td class="py-3 px-4 font-mono text-stone-500">[Tersimpan di WA Group]</td>
+                                <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">FIX</span></td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="py-3 px-4 font-bold text-stone-900">Aldy</td>
+                                <td class="py-3 px-4">Driver Shift 2 (Rest Area Batang – Gunungkidul)</td>
+                                <td class="py-3 px-4 font-mono text-stone-500">[Tersimpan di WA Group]</td>
+                                <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">FIX</span></td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="py-3 px-4 font-bold text-stone-900">Alfi</td>
+                                <td class="py-3 px-4">Navigator Utama & Pendamping Driver Melek</td>
+                                <td class="py-3 px-4 font-mono text-stone-500">[Tersimpan di WA Group]</td>
+                                <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">FIX</span></td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="py-3 px-4 font-bold text-stone-900">Peserta 5</td>
+                                <td class="py-3 px-4">Logistik, Konsumsi, & Bendahara Kas</td>
+                                <td class="py-3 px-4 font-mono text-stone-500">[Tersimpan di WA Group]</td>
+                                <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">FIX</span></td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="py-3 px-4 font-bold text-stone-900">Peserta 6 (Host Jogja)</td>
+                                <td class="py-3 px-4">Tuan Rumah Jogja (Menyusul bergabung di lokasi)</td>
+                                <td class="py-3 px-4 font-mono text-stone-500">[Tersimpan di WA Group]</td>
+                                <td class="py-3 px-4 text-center"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">MENYUSUL</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Transparency Status Grid -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+                <h3 class="font-bold text-stone-900 text-base mb-3">📝 Status Verifikasi Dokumen Perencanaan</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3 bg-stone-50 rounded-xl border border-stone-200">
+                        <span class="block text-[10px] font-bold text-emerald-700">🟢 FIX</span>
+                        <span class="font-semibold text-stone-800">Tanggal & Cuti Kerja</span>
+                    </div>
+                    <div class="p-3 bg-stone-50 rounded-xl border border-stone-200">
+                        <span class="block text-[10px] font-bold text-emerald-700">🟢 FIX</span>
+                        <span class="font-semibold text-stone-800">Komposisi Rombongan</span>
+                    </div>
+                    <div class="p-3 bg-stone-50 rounded-xl border border-stone-200">
+                        <span class="block text-[10px] font-bold text-emerald-700">🟢 FIX</span>
+                        <span class="font-semibold text-stone-800">Pembagian Shift Driver</span>
+                    </div>
+                    <div class="p-3 bg-stone-50 rounded-xl border border-stone-200">
+                        <span class="block text-[10px] font-bold text-emerald-700">🟢 FIX</span>
+                        <span class="font-semibold text-stone-800">Tarif Tol Resmi 2026</span>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                        <span class="block text-[10px] font-bold text-amber-700">🟡 ASUMSI</span>
+                        <span class="font-semibold text-stone-800">Estimasi Konsumsi BBM</span>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-xl border border-rose-200">
+                        <span class="block text-[10px] font-bold text-rose-700">🔴 BELUM FIX</span>
+                        <span class="font-semibold text-stone-800">Booking Villa Final</span>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-xl border border-rose-200">
+                        <span class="block text-[10px] font-bold text-rose-700">🔴 BELUM FIX</span>
+                        <span class="font-semibold text-stone-800">Paket Jeep Deso Tepus</span>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-xl border border-rose-200">
+                        <span class="block text-[10px] font-bold text-rose-700">🔴 BELUM FIX</span>
+                        <span class="font-semibold text-stone-800">Kelas Batik & Griya Cokelat</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: ITINERARY INTERAKTIF ==================== -->
+        <section id="view-itinerary" class="hidden space-y-6">
+            <!-- Intro Paragraph -->
+            <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
+                <h2 class="font-bold text-stone-900 text-base mb-1">📅 Jadwal Perjalanan Hari demi Hari</h2>
+                <p>
+                    Gunakan filter hari di bawah untuk mengeksplorasi susunan jam, lokasi, dan catatan khusus. Rangkaian acara disusun seimbang antara waktu perjalanan, istirahat wajib, aktivitas outdoor, dan mengobrol santai. Anda juga dapat mengaktifkan <strong>"Mode Antisipasi Hujan"</strong> untuk melihat rencana alternatif jika cuaca buruk.
+                </p>
+            </div>
+
+            <!-- Controls: Day Filter & Weather Toggle -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- Day Filter Buttons -->
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <button onclick="filterDay('all')" id="day-btn-all" class="day-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 text-white shadow-sm">
+                        Semua Hari
+                    </button>
+                    <button onclick="filterDay(0)" id="day-btn-0" class="day-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-100">
+                        Hari 0 (Jumat, 6 Nov)
+                    </button>
+                    <button onclick="filterDay(1)" id="day-btn-1" class="day-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-100">
+                        Hari 1 (Sabtu, 7 Nov)
+                    </button>
+                    <button onclick="filterDay(2)" id="day-btn-2" class="day-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-100">
+                        Hari 2 (Minggu, 8 Nov)
+                    </button>
+                    <button onclick="filterDay(3)" id="day-btn-3" class="day-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-100">
+                        Hari 3 (Senin, 9 Nov)
+                    </button>
+                </div>
+
+                <!-- Weather Toggle -->
+                <div class="flex items-center gap-2 bg-sky-50 px-3 py-2 rounded-xl border border-sky-200 text-xs text-sky-900 w-full md:w-auto justify-between md:justify-start">
+                    <span class="font-semibold flex items-center gap-1">🌧️ Opsional: Mode Antisipasi Hujan</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="weather-toggle" class="sr-only peer" onchange="toggleWeatherMode(this.checked)">
+                        <div class="w-9 h-5 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Timeline Cards Container -->
+            <div id="itinerary-timeline-container" class="space-y-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: KALKULATOR BIAYA ==================== -->
+        <section id="view-budget" class="hidden space-y-6">
+            <!-- Intro Paragraph -->
+            <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
+                <h2 class="font-bold text-stone-900 text-base mb-1">💰 Transparansi Budget & Kalkulator Interaktif</h2>
+                <p>
+                    Setiap pengeluaran dicatat transparan oleh bendahara. Dana tol dan BBM disimulasikan dengan *buffer* aman. Sisa saldo kas akan dikembalikan utuh sesudah trip. Anda bisa mengubah jumlah peserta di bawah untuk melihat kalkulasi ulang pembagian biaya kas secara langsung.
+                </p>
+            </div>
+
+            <!-- Dynamic Calculator Controls -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Pilih Jumlah Peserta Pembagi Kas:</label>
+                    <div class="inline-flex rounded-lg shadow-sm border border-stone-200 p-1 bg-stone-50">
+                        <button onclick="setParticipants(5)" id="part-5-btn" class="px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-700 text-white">5 Orang (Mobil Cibinong)</button>
+                        <button onclick="setParticipants(6)" id="part-6-btn" class="px-4 py-1.5 rounded-md text-xs font-medium text-stone-600 hover:text-stone-900">6 Orang (Termasuk Host Jogja)</button>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-right w-full md:w-auto">
+                    <span class="block text-[10px] font-bold text-emerald-800 uppercase">Setoran Kas Final Per Orang</span>
+                    <span id="calculated-cost-per-person" class="text-xl font-extrabold text-emerald-900">Rp 2.300.000</span>
+                    <span class="block text-[10px] text-emerald-700">+ Rp 300.000 (Uang Saku Mandiri)</span>
+                </div>
+            </div>
+
+            <!-- Visual Charts Container (2 Charts side by side) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Doughnut Chart Container -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200 flex flex-col items-center">
+                    <h3 class="font-bold text-stone-900 text-sm mb-3 self-start">📊 Proporsi Pembagian Kas Utama</h3>
+                    <div class="chart-container">
+                        <canvas id="budgetDoughnutChart"></canvas>
+                    </div>
+                    <p class="text-[11px] text-stone-500 mt-2 text-center">Persentase distribusi anggaran kas bersama per kategori.</p>
+                </div>
+
+                <!-- Bar Chart Container -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200 flex flex-col items-center">
+                    <h3 class="font-bold text-stone-900 text-sm mb-3 self-start">📈 Nominal Pengeluaran Per Pos (Rombongan)</h3>
+                    <div class="chart-container">
+                        <canvas id="budgetBarChart"></canvas>
+                    </div>
+                    <p class="text-[11px] text-stone-500 mt-2 text-center">Nominal rupiah estimasi pengeluaran kas rombongan.</p>
+                </div>
+            </div>
+
+            <!-- Budget Detailed Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <div class="p-4 border-b border-stone-100">
+                    <h3 class="font-bold text-stone-900 text-base">📋 Rincian Pos Pengeluaran Kas</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-stone-700">
+                        <thead class="bg-stone-50 text-stone-900 font-semibold border-b border-stone-200 uppercase">
+                            <tr>
+                                <th class="py-3 px-4">Pos Pengeluaran</th>
+                                <th class="py-3 px-4">Total Rombongan</th>
+                                <th class="py-3 px-4 text-center">Pembagi</th>
+                                <th class="py-3 px-4">Cost / Orang</th>
+                                <th class="py-3 px-4">Keterangan / Ref 2026</th>
+                            </tr>
+                        </thead>
+                        <tbody id="budget-table-body" class="divide-y divide-stone-100">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: RUTE & KEAMANAN ==================== -->
+        <section id="view-route" class="hidden space-y-6">
+            <!-- Intro Paragraph -->
+            <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
+                <h2 class="font-bold text-stone-900 text-base mb-1">🛣️ Strategi Rute Cluster & Protokol Keamanan</h2>
+                <p>
+                    Perjalanan darat sejauh **±550 km (sekali jalan)** adalah aspek risiko utama trip ini. Kami menerapkan konsep **Satu Klaster**, bukan tiga, sehingga seluruh destinasi berada dalam satu garis lurus tanpa rute bolak-balik. Simak skema rute dan 6 protokol keselamatan berkendara di bawah ini.
+                </p>
+            </div>
+
+            <!-- Route Flow Visual Diagram (HTML/CSS Flow) -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+                <h3 class="font-bold text-stone-900 text-base mb-4">📍 Efisiensi Rute Garis Lurus (Satu Klaster Tepus)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 relative">
+                    <!-- Step 1 -->
+                    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 relative">
+                        <span class="text-[10px] font-bold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded">Tembus Tol</span>
+                        <h4 class="font-bold text-stone-900 text-sm mt-2">1. GT Prambanan</h4>
+                        <p class="text-xs text-stone-600 mt-1">Pintu keluar tol utama Jawa Tengah / Jogja.</p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <span class="text-[10px] font-bold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded">30 km • 50 mnt</span>
+                        <h4 class="font-bold text-stone-900 text-sm mt-2">2. Nglanggeran</h4>
+                        <p class="text-xs text-stone-600 mt-1">Griya Cokelat & Embung Nglanggeran.</p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <span class="text-[10px] font-bold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded">35 km • 55 mnt</span>
+                        <h4 class="font-bold text-stone-900 text-sm mt-2">3. Wonosari</h4>
+                        <p class="text-xs text-stone-600 mt-1">Pusat kota Gunungkidul (Lewat & Rest/Kuliner).</p>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="p-4 bg-emerald-800 text-white rounded-xl shadow-sm">
+                        <span class="text-[10px] font-bold bg-emerald-600 text-emerald-100 px-2 py-0.5 rounded">20 km • 45 mnt</span>
+                        <h4 class="font-bold text-white text-sm mt-2">4. TEPUS (Basecamp)</h4>
+                        <p class="text-xs text-emerald-200 mt-1">Pusat villa & Pantai Gunungkidul.</p>
+                    </div>
+                </div>
+                <div class="mt-4 bg-stone-50 p-3 rounded-xl border border-stone-200 text-xs text-stone-600">
+                    💡 <strong>Keunggulan Klaster Ini:</strong> Total jarak tempuh menyetir lokal selama 3 hari di Jogja hanya <strong>±280 km</strong>. Sisa waktu difokuskan untuk interaksi dan santai, bukan di dalam mobil.
+                </div>
+            </div>
+
+            <!-- Driver Shift Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-stone-900 text-base mb-3">🚘 Pembagian Shift Driver Berkendara</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start justify-between">
+                            <div>
+                                <span class="font-bold text-stone-900 text-sm">Shift 1: Wendy</span>
+                                <p class="text-stone-600">Rute: Cibinong – Rest Area Batang (Tol Trans Jawa)</p>
+                            </div>
+                            <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-mono text-[10px] font-bold">19.30 – 23.00</span>
+                        </div>
+                        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-start justify-between">
+                            <div>
+                                <span class="font-bold text-amber-900 text-sm">🚨 STOP TIDUR WAJIB (1.5 Jam)</span>
+                                <p class="text-amber-800">Rest Area Batang / Semarang (02.00 – 03.30 WIB)</p>
+                            </div>
+                            <span class="bg-amber-200 text-amber-900 px-2 py-1 rounded font-mono text-[10px] font-bold">WAJIB</span>
+                        </div>
+                        <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start justify-between">
+                            <div>
+                                <span class="font-bold text-stone-900 text-sm">Shift 2: Aldy</span>
+                                <p class="text-stone-600">Rute: Rest Area Batang – Prambanan – Gunungkidul</p>
+                            </div>
+                            <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-mono text-[10px] font-bold">03.30 – 07.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safety Protocols Checklist -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-stone-900 text-base mb-3">🛞 6 Protokol Keamanan Perjalanan Darat</h3>
+                    <ul class="text-xs text-stone-700 space-y-2.5">
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald-700 font-bold">1.</span>
+                            <span><strong>Dua Driver Terdaftar:</strong> Rotasi menyetir dilakukan maksimal per 3 jam sekali.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald-700 font-bold">2.</span>
+                            <span><strong>Stop Tidur Wajib 1,5 Jam:</strong> Mengatasi ritme sirkadian tubuh pukul 02.00 – 05.00 WIB.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald-700 font-bold">3.</span>
+                            <span><strong>Pendamping Driver Melek:</strong> Pendamping di kursi depan dilarang tidur saat menemani driver.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald-700 font-bold">4.</span>
+                            <span><strong>Live Location Aktif:</strong> Fitur *Share Location* WhatsApp grup keluarga aktif sepanjang trip.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald-700 font-bold">5.</span>
+                            <span><strong>Laporan 2x Sehari:</strong> Foto kabar rombongan dikirim tiap pagi & malam hari ke rumah.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald-700 font-bold">6.</span>
+                            <span><strong>Servis Kendaraan (H-3):</strong> Pengecekan Oli, Ban, Rem, Radiator di bengkel resmi sebelum keberangkatan.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 5: VILLAS & DESTINASI ==================== -->
+        <section id="view-villas" class="hidden space-y-6">
+            <!-- Intro Paragraph -->
+            <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
+                <h2 class="font-bold text-stone-900 text-base mb-1">🏡 Shortlist Villa & Efisiensi Destinasi</h2>
+                <p>
+                    Berikut adalah empat pilihan villa shortlist di Kec. Tepus dengan batas anggaran maksimal <strong>Rp 1.000.000 / malam</strong>. Selain itu, kami juga menampilkan daftar destinasi wisata yang <strong>sengaja dieliminasi</strong> demi menjaga efisiensi waktu dan faktor keamanan musim hujan.
+                </p>
+            </div>
+
+            <!-- Villa Shortlist Cards -->
+            <div>
+                <h3 class="font-bold text-stone-900 text-base mb-3">🏠 Shortlist Rekomendasi Villa (Kec. Tepus, Gunungkidul)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Villa 1 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">⭐ 4.8 (108 Ulasan)</span>
+                                <span class="text-[10px] text-stone-400">Pilihan #1</span>
+                            </div>
+                            <h4 class="font-bold text-stone-900 text-sm">Penginapan Arimbi</h4>
+                            <p class="text-[11px] text-stone-500 mt-0.5">Trenggole, Tepus</p>
+                            <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+                                Terkuat untuk suasana BBQ & api unggun. Pemilik ramah & akomodatif untuk rombongan. Fasilitas sederhana.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
+                            <span class="font-mono text-emerald-700">0822-2172-0842</span>
+                            <a href="https://wa.me/6282221720842" target="_blank" class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded hover:bg-emerald-200">WA</a>
+                        </div>
+                    </div>
+
+                    <!-- Villa 2 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">⭐ 4.7 (82 Ulasan)</span>
+                                <span class="text-[10px] text-stone-400">Pilihan #2</span>
+                            </div>
+                            <h4 class="font-bold text-stone-900 text-sm">Sundak Beach House</h4>
+                            <p class="text-[11px] text-stone-500 mt-0.5">Jl. Pantai Selatan Jawa No.16</p>
+                            <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+                                Tepat di seberang Pantai Sundak. Memiliki kolam renang alami yang pas untuk rombongan.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
+                            <span class="font-mono text-emerald-700">0823-2268-8773</span>
+                            <a href="https://wa.me/6282322688773" target="_blank" class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded hover:bg-emerald-200">WA</a>
+                        </div>
+                    </div>
+
+                    <!-- Villa 3 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">⭐ 4.6 (128 Ulasan)</span>
+                                <span class="text-[10px] text-stone-400">Pilihan #3</span>
+                            </div>
+                            <h4 class="font-bold text-stone-900 text-sm">Light Blue Villa</h4>
+                            <p class="text-[11px] text-stone-500 mt-0.5">Jl. Indrayanti, Tepus</p>
+                            <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+                                Konsisten unggul dalam kebersihan dan pelayanan staf. Opsi mengutamakan kenyamanan.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
+                            <span class="font-mono text-emerald-700">0812-8009-5776</span>
+                            <a href="https://wa.me/6281280095776" target="_blank" class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded hover:bg-emerald-200">WA</a>
+                        </div>
+                    </div>
+
+                    <!-- Villa 4 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">⭐ 4.4 (669 Ulasan)</span>
+                                <span class="text-[10px] text-stone-400">Pilihan #4</span>
+                            </div>
+                            <h4 class="font-bold text-stone-900 text-sm">Casa Coco Resort</h4>
+                            <p class="text-[11px] text-stone-500 mt-0.5">Jl. Pansel Jawa No.18a</p>
+                            <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+                                Paling teruji, fasilitas kolam renang malam hari. Restoran non-aktif (makanan disiapkan mandiri).
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
+                            <span class="font-mono text-emerald-700">0817-311-013</span>
+                            <a href="https://wa.me/62817311013" target="_blank" class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded hover:bg-emerald-200">WA</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eliminated Spots Logic -->
+            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-5">
+                <h3 class="font-bold text-rose-900 text-base mb-3">❌ Wisata yang Sengaja Dieliminasi (Efficiency Check)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3 bg-white rounded-xl border border-rose-100">
+                        <span class="font-bold text-stone-900">Rafting Sungai Elo (Magelang)</span>
+                        <p class="text-stone-500 mt-1">Arah utara / berlawanan rute klaster Tepus.</p>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl border border-rose-100">
+                        <span class="font-bold text-stone-900">Obelix / HeHa Ocean View</span>
+                        <p class="text-stone-500 mt-1">Terlalu jauh (2 jam ke barat dari Tepus).</p>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl border border-rose-100">
+                        <span class="font-bold text-stone-900">Jembatan Timang</span>
+                        <p class="text-stone-500 mt-1">Biaya tinggi (Rp 1,25 jt/6 org) untuk waktu singkat.</p>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl border border-rose-100">
+                        <span class="font-bold text-stone-900">Goa Jomblang & Kalisuci</span>
+                        <p class="text-stone-500 mt-1">Risiko penutupan tinggi akibat debit air musim hujan.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 6: KONTAK & EMERGENCY ==================== -->
+        <section id="view-contacts" class="hidden space-y-6">
+            <!-- Intro Paragraph -->
+            <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
+                <h2 class="font-bold text-stone-900 text-base mb-1">📞 Direktori Kontak Penting & Layanan Darurat</h2>
+                <p>
+                    Semua nomor kontak vendor, lokasi wisata, kuliner, serta layanan gawat darurat tercantum di bawah ini. Jika sinyal ponsel peserta memudar di area pantai tersembunyi Gunungkidul, keluarga di rumah dapat langsung menghubungi pihak pengelola villa atau lokasi wisata.
+                </p>
+            </div>
+
+            <!-- Signal Warning Callout -->
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                <div class="text-xl">📱</div>
+                <div class="text-xs text-amber-900 leading-relaxed">
+                    <strong>Petunjuk Bagi Keluarga Jika Telepon Peserta Sulit Dihubungi:</strong> Sinyal seluler di beberapa pesisir Gunungkidul dapat memudar. Jika peserta tidak terhubung lebih dari <strong>2 jam di siang hari</strong>, silakan hubungi pengelola Villa atau Desa Wisata Tepus di bawah ini untuk mengonfirmasi posisi rombongan.
+                </div>
+            </div>
+
+            <!-- Contacts Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Akomodasi & Lokasi -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-stone-900 text-sm mb-3 border-b pb-2">🏞️ Akomodasi & Destinasi</h3>
+                    <ul class="text-xs space-y-3">
+                        <li class="flex justify-between items-center">
+                            <div>
+                                <span class="font-semibold text-stone-800">Desa Wisata Tepus</span>
+                                <span class="block text-[10px] text-stone-400">Dewi Kampus</span>
+                            </div>
+                            <a href="tel:081227851556" class="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded">0812-2785-1556</a>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <div>
+                                <span class="font-semibold text-stone-800">Desa Wisata Nglanggeran</span>
+                                <span class="block text-[10px] text-stone-400">Embung & Griya Cokelat</span>
+                            </div>
+                            <a href="tel:081802606050" class="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded">0818-0260-6050</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Kuliner & Singgah -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-stone-900 text-sm mb-3 border-b pb-2">🍖 Kuliner & Singgah</h3>
+                    <ul class="text-xs space-y-3">
+                        <li class="flex justify-between items-center">
+                            <div>
+                                <span class="font-semibold text-stone-800">Sate Klathak Pak Pong</span>
+                                <span class="block text-[10px] text-stone-400">Pleret Utama</span>
+                            </div>
+                            <a href="tel:08112645251" class="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded">0811-2645-251</a>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <div>
+                                <span class="font-semibold text-stone-800">Pak Pong 2</span>
+                                <span class="block text-[10px] text-stone-400">Cadangan</span>
+                            </div>
+                            <a href="tel:08112631152" class="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded">0811-2631-152</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Emergency Respon Cepat -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-200">
+                    <h3 class="font-bold text-rose-900 text-sm mb-3 border-b border-rose-100 pb-2">🚑 Layanan Darurat Resmi</h3>
+                    <ul class="text-xs space-y-3">
+                        <li class="flex justify-between items-center">
+                            <span class="font-semibold text-stone-800">Ambulans / Gawat Darurat</span>
+                            <a href="tel:119" class="font-mono text-rose-700 font-bold bg-rose-100 px-3 py-1 rounded">119</a>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="font-semibold text-stone-800">Kepolisian RI</span>
+                            <a href="tel:110" class="font-mono text-rose-700 font-bold bg-rose-100 px-3 py-1 rounded">110</a>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="font-semibold text-stone-800">Basarnas (SAR Gunungkidul)</span>
+                            <a href="tel:115" class="font-mono text-rose-700 font-bold bg-rose-100 px-3 py-1 rounded">115</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-stone-900 text-stone-400 py-6 text-xs border-t border-stone-800 mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2">
+            <p class="font-semibold text-stone-200">🚗 REUNI BARUDAK LESGOH! — JOGJA SELATAN 2026</p>
+            <p class="text-stone-500">Disusun oleh Iqbal (Mylo) • Versi Draft 1 • Untuk Dibaca Bersama Keluarga di Rumah</p>
+            <p class="text-[10px] text-stone-600">"Merawat pertemanan belasan tahun dengan aman, transparan, dan berkesan."</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+    <script>
+        // ================= APPLICATION STATE =================
+        const state = {
+            activeTab: 'overview',
+            participantsCount: 5,
+            currentDayFilter: 'all',
+            weatherMode: false
+        };
+
+        // ================= ITINERARY DATA SOURCE =================
+        const itineraryData = [
+            // Hari 0
+            {
+                day: 0,
+                dayTitle: "HARI 0 — Malam Keberangkatan",
+                date: "Jumat, 6 November 2026",
+                time: "18.30 WIB",
+                title: "Titik Kumpul (Cibinong - Rumah Iqbal)",
+                desc: "Penataan barang ke bagasi mobil. Briefing singkat 5 menit: pembagian shift driver, aturan pendamping driver melek, dan pengecekan final e-toll/stamina.",
+                badge: "WFH Day",
+                type: "prep",
+                rainBackup: null
+            },
+            {
+                day: 0,
+                dayTitle: "HARI 0 — Malam Keberangkatan",
+                date: "Jumat, 6 November 2026",
+                time: "19.30 WIB",
+                title: "Keberangkatan Menuju Tol",
+                desc: "Wendy mulai menyetir (Shift 1). Buffer waktu 1 jam sudah dimasukkan dalam perhitungan jadwal.",
+                badge: "Driver: Wendy",
+                type: "drive",
+                rainBackup: null
+            },
+            {
+                day: 0,
+                dayTitle: "HARI 0 — Malam Keberangkatan",
+                date: "Jumat, 6 November 2026",
+                time: "23.00 WIB",
+                title: "Istirahat I (Rest Area Cipali)",
+                desc: "Makan malam santai, isi BBM penuh, dan top-up e-toll. Rotasi Driver: Wendy istirahat, Aldy mengambil alih kemudi (Shift 2).",
+                badge: "Rotasi Driver",
+                type: "rest",
+                rainBackup: null
+            },
+            {
+                day: 0,
+                dayTitle: "HARI 0 — Malam Keberangkatan",
+                date: "Jumat, 6 November 2026",
+                time: "02.00 – 03.30 WIB",
+                title: "🚨 STOP TIDUR WAJIB (Rest Area Batang / Semarang)",
+                desc: "Durasi 1,5 jam (WAJIB, bukan opsional). Kursi direbahkan, alarm diset. Mengatasi jam kritis ritme sirkadian tubuh (02.00-05.00 WIB).",
+                badge: "KEAMANAN UTAMA",
+                type: "critical",
+                rainBackup: null
+            },
+
+            // Hari 1
+            {
+                day: 1,
+                dayTitle: "HARI 1 — Desa, Cokelat, dan Ombak",
+                date: "Sabtu, 7 November 2026",
+                time: "07.00 WIB",
+                title: "Keluar GT Prambanan & Sarapan",
+                desc: "Tiba di area Prambanan setelah tempuh ±530 km. Sarapan soto hangat di sekitar jalan utama.",
+                badge: "Transit",
+                type: "food",
+                rainBackup: null
+            },
+            {
+                day: 1,
+                dayTitle: "HARI 1 — Desa, Cokelat, dan Ombak",
+                date: "Sabtu, 7 November 2026",
+                time: "09.30 WIB",
+                title: "Desa Wisata Nglanggeran (Embung & Griya Cokelat)",
+                desc: "Melihat lanskap gunung api purba, embung, serta kunjungan ke Griya Cokelat (proses pengolahan kakao warga).",
+                badge: "Edukasi & Santai",
+                type: "tour",
+                rainBackup: "Aman dari hujan (Area semi-indoor Griya Cokelat & Pendopo)."
+            },
+            {
+                day: 1,
+                dayTitle: "HARI 1 — Desa, Cokelat, dan Ombak",
+                date: "Sabtu, 7 November 2026",
+                time: "14.00 WIB",
+                title: "Check-in Villa Tepus & TIDUR SIANG WAJIB",
+                desc: "Tidur siang 2 jam sangat krusial agar stamina fisik hari ke-2 tidak drop.",
+                badge: "Recovery Stamina",
+                type: "rest",
+                rainBackup: null
+            },
+            {
+                day: 1,
+                dayTitle: "HARI 1 — Desa, Cokelat, dan Ombak",
+                date: "Sabtu, 7 November 2026",
+                time: "16.30 WIB",
+                title: "Sore di Pantai Sadranan",
+                desc: "Pantai memiliki karang alami penahan ombak. Sewa gazebo, bersantai menikmati suasana sunset.",
+                badge: "Outdoor Sunset",
+                type: "beach",
+                rainBackup: "Pindah ke Pantai Indrayanti (Fasilitas gazebo & shelter terlindung rapat)."
+            },
+            {
+                day: 1,
+                dayTitle: "HARI 1 — Desa, Cokelat, dan Ombak",
+                date: "Sabtu, 7 November 2026",
+                time: "20.00 WIB",
+                title: "Makan Malam BBQ & Main Kartu di Villa",
+                desc: "Menu: Ikan, ayam, & jagung bakar. Ngobrol santai di villa. Tidak ada agenda keluar setelah kondisi gelap.",
+                badge: "Malam di Villa",
+                type: "food",
+                rainBackup: "BBQ dipindah ke teras/pendopo villa."
+            },
+
+            // Hari 2
+            {
+                day: 2,
+                dayTitle: "HARI 2 — Jeep, Karst, dan Pantai Tersembunyi",
+                date: "Minggu, 8 November 2026",
+                time: "08.00 WIB",
+                title: "Jeep Jajah Deso — Desa Wisata Tepus",
+                desc: "Menyusuri jalur pedesaan karst, kampung bonsai, hingga pantai tersembunyi dengan Jeep 4x4.",
+                badge: "Main Event",
+                type: "tour",
+                rainBackup: "Jeep tetap beroperasi saat gerimis ringan (mantel disiapkan)."
+            },
+            {
+                day: 2,
+                dayTitle: "HARI 2 — Jeep, Karst, dan Pantai Tersembunyi",
+                date: "Minggu, 8 November 2026",
+                time: "12.00 WIB",
+                title: "BBQ Ikan Pesisir Bersama Warga Lokal",
+                desc: "Makan siang ikan segar bakar langsung di tepi pantai bersama pengelola lokal Tepus.",
+                badge: "Kuliner Khas",
+                type: "food",
+                rainBackup: "Makan dipindah ke rumah warga / pendopo pengelola."
+            },
+            {
+                day: 2,
+                dayTitle: "HARI 2 — Jeep, Karst, dan Pantai Tersembunyi",
+                date: "Minggu, 8 November 2026",
+                time: "16.00 WIB",
+                title: "Opsional: Kelas Membatik Lokal",
+                desc: "Bagi yang berminat membuat kenang-kenangan karya sendiri. Peserta lain lanjut bersantai / berenang di villa.",
+                badge: "Opsional",
+                type: "tour",
+                rainBackup: "Sangat ideal dilakukan saat hujan (Aktivitas indoor)."
+            },
+            {
+                day: 2,
+                dayTitle: "HARI 2 — Jeep, Karst, dan Pantai Tersembunyi",
+                date: "Minggu, 8 November 2026",
+                time: "17.30 WIB",
+                title: "Sore di Kafe View Drini / On The Rock",
+                desc: "Waktu tempuh 20 menit dari villa. Memikmati kopi, angin laut, dan suasana senja.",
+                badge: "Chill",
+                type: "beach",
+                rainBackup: "Pindah ke kafe indoor Wonosari atau bersantai di villa."
+            },
+            {
+                day: 2,
+                dayTitle: "HARI 2 — Jeep, Karst, dan Pantai Tersembunyi",
+                date: "Minggu, 8 November 2026",
+                time: "20.30 WIB",
+                title: "Kembali ke Villa & Packing Malam Ini",
+                desc: "Seluruh barang dirapikan malam ini agar kepulangan esok hari tidak bergeser keterlambatan.",
+                badge: "Persiapan Pulang",
+                type: "prep",
+                rainBackup: null
+            },
+
+            // Hari 3
+            {
+                day: 3,
+                dayTitle: "HARI 3 — Pulang, Tapi Tidak Buru-Buru",
+                date: "Senin, 9 November 2026",
+                time: "07.30 WIB",
+                title: "Check-out Villa & Foto Rombongan",
+                desc: "Sesi foto bersama dokumentasi sebelum meninggalkan villa Tepus.",
+                badge: "Check-out",
+                type: "prep",
+                rainBackup: null
+            },
+            {
+                day: 3,
+                dayTitle: "HARI 3 — Pulang, Tapi Tidak Buru-Buru",
+                date: "Senin, 9 November 2026",
+                time: "08.00 WIB",
+                title: "Bukit Bintang, Patuk",
+                desc: "Kopi pagi dengan pemandangan lanskap Jogja dari ketinggian. Perpisahan dengan Host Jogja.",
+                badge: "Perpisahan Host",
+                type: "chill",
+                rainBackup: null
+            },
+            {
+                day: 3,
+                dayTitle: "HARI 3 — Pulang, Tapi Tidak Buru-Buru",
+                date: "Senin, 9 November 2026",
+                time: "10.30 WIB",
+                title: "Sate Klathak Pak Pong (Pleret)",
+                desc: "Pemesanan via telepon dari villa untuk menghindari antrean panjang (>1 jam).",
+                badge: "Kuliner Ikonik",
+                type: "food",
+                rainBackup: null
+            },
+            {
+                day: 3,
+                dayTitle: "HARI 3 — Pulang, Tapi Tidak Buru-Buru",
+                date: "Senin, 9 November 2026",
+                time: "12.30 WIB",
+                title: "Pusat Oleh-Oleh Jogja Kota (1 Stop)",
+                desc: "Pengambilan Bakpia/Yangko di satu titik terfokus. Menghindari macet Malioboro.",
+                badge: "Oleh-Oleh",
+                type: "tour",
+                rainBackup: null
+            },
+            {
+                day: 3,
+                dayTitle: "HARI 3 — Pulang, Tapi Tidak Buru-Buru",
+                date: "Senin, 9 November 2026",
+                time: "23.30 – 01.00 WIB",
+                title: "Estimasi Tiba Kembali di Cibinong",
+                desc: "Kembali dengan selamat di titik awal. Cuti hari Selasa sudah dipastikan aman.",
+                badge: "Tiba di Rumah",
+                type: "critical",
+                rainBackup: null
+            }
+        ];
+
+        // ================= BUDGET DATA BASE =================
+        const rawBudgetData = [
+            { id: 'tol', name: 'Tol PP (Cibinong – Prambanan)', sharedType: 'car', total: 1500000, note: 'Acuan Tarif Tol Resmi 2026' },
+            { id: 'bbm', name: 'BBM Mobil PP (±1.400 km)', sharedType: 'car', total: 2000000, note: 'Estimasi Konsumsi BBM Mobil' },
+            { id: 'kas_mobil', name: 'Kas Perawatan Mobil (Oli & Keausan)', sharedType: 'car', total: 600000, note: 'Distribusi Pemakaian Mobil' },
+            { id: 'parkir', name: 'Parkir & Retribusi Jalan', sharedType: 'car', total: 200000, note: 'Estimasi Parkir Lokal' },
+            { id: 'villa', name: 'Sewa Villa (2 Malam)', sharedType: 'all', total: 2000000, note: 'Maks Rp 1 Juta / Malam' },
+            { id: 'jeep', name: 'Jeep Jajah Deso + BBQ Ikan', sharedType: 'all', total: 1050000, note: 'Paket Konsumsi & Driver Jeep' },
+            { id: 'tiket', name: 'Tiket Wisata, Kafe, & Parkir', sharedType: 'all', total: 1170000, note: 'Estimasi Tiket Masuk' },
+            { id: 'bbq_villa', name: 'Bahan BBQ Villa (Ikan, Ayam, Arang)', sharedType: 'all', total: 600000, note: 'Belanja Logistik Mandiri' },
+            { id: 'makan_luar', name: 'Makan Luar Paket (6 Sesi)', sharedType: 'all', total: 2400000, note: 'Estimasi Rp 40rb / Makan' },
+            { id: 'darurat', name: 'Kas Darurat Bersama', sharedType: 'all', total: 900000, note: 'Dana Cadangan (Sisa Kembali)' }
+        ];
+
+        // Chart instances
+        let doughnutChart = null;
+        let barChart = null;
+
+        // ================= JS INIT & LISTENERS =================
+        document.addEventListener("DOMContentLoaded", function() {
+            renderItinerary();
+            updateBudgetData();
+            initCharts();
+        });
+
+        // ================= TAB NAVIGATION LOGIC =================
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            const tabs = ['overview', 'itinerary', 'budget', 'route', 'villas', 'contacts'];
+            tabs.forEach(t => {
+                const view = document.getElementById('view-' + t);
+                const btn = document.getElementById('tab-' + t);
+                if (t === tabId) {
+                    view.classList.remove('hidden');
+                    btn.classList.add('active');
+                    btn.classList.remove('text-stone-600');
+                } else {
+                    view.classList.add('hidden');
+                    btn.classList.remove('active');
+                    btn.classList.add('text-stone-600');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= ITINERARY FILTERING LOGIC =================
+        function filterDay(dayVal) {
+            state.currentDayFilter = dayVal;
+            // update active button styles
+            const btns = [
+                { id: 'day-btn-all', val: 'all' },
+                { id: 'day-btn-0', val: 0 },
+                { id: 'day-btn-1', val: 1 },
+                { id: 'day-btn-2', val: 2 },
+                { id: 'day-btn-3', val: 3 }
+            ];
+            btns.forEach(b => {
+                const el = document.getElementById(b.id);
+                if (b.val === dayVal) {
+                    el.className = "day-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 text-white shadow-sm";
+                } else {
+                    el.className = "day-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-100";
+                }
+            });
+            renderItinerary();
+        }
+
+        function toggleWeatherMode(checked) {
+            state.weatherMode = checked;
+            renderItinerary();
+        }
+
+        function renderItinerary() {
+            const container = document.getElementById('itinerary-timeline-container');
+            container.innerHTML = '';
+
+            let filtered = itineraryData;
+            if (state.currentDayFilter !== 'all') {
+                filtered = itineraryData.filter(item => item.day === state.currentDayFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-stone-400 text-xs">Tidak ada jadwal untuk filter ini.</div>`;
+                return;
+            }
+
+            let currentDayHeader = "";
+
+            filtered.forEach(item => {
+                // Render Day Section Header if changed
+                if (item.dayTitle !== currentDayHeader) {
+                    currentDayHeader = item.dayTitle;
+                    const headerEl = document.createElement('div');
+                    headerEl.className = "pt-4 pb-2 border-b-2 border-emerald-800 flex items-center justify-between";
+                    headerEl.innerHTML = `
+                        <h3 class="font-extrabold text-stone-900 text-sm tracking-wide uppercase">${item.dayTitle}</h3>
+                        <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">${item.date}</span>
+                    `;
+                    container.appendChild(headerEl);
+                }
+
+                // Render Timeline Card
+                const card = document.createElement('div');
+                let borderClass = "border-stone-200 bg-white";
+                if (item.type === 'critical') borderClass = "border-amber-300 bg-amber-50/60";
+
+                card.className = `p-4 rounded-xl shadow-sm border ${borderClass} transition-all hover:shadow-md`;
+
+                let rainHtml = '';
+                if (state.weatherMode && item.rainBackup) {
+                    rainHtml = `
+                        <div class="mt-2.5 p-2.5 bg-sky-50 border border-sky-200 rounded-lg text-xs text-sky-900 flex items-start gap-2">
+                            <span>🌧️</span>
+                            <div>
+                                <strong class="block font-semibold">Rencana Cadangan Hujan:</strong>
+                                <span>${item.rainBackup}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-xs font-bold bg-stone-100 text-stone-800 px-2 py-0.5 rounded">${item.time}</span>
+                            <h4 class="font-bold text-stone-900 text-sm">${item.title}</h4>
+                        </div>
+                        <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit">${item.badge}</span>
+                    </div>
+                    <p class="text-xs text-stone-600 leading-relaxed">${item.desc}</p>
+                    ${rainHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ================= BUDGET CALCULATOR LOGIC =================
+        function setParticipants(num) {
+            state.participantsCount = num;
+            const btn5 = document.getElementById('part-5-btn');
+            const btn6 = document.getElementById('part-6-btn');
+
+            if (num === 5) {
+                btn5.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-700 text-white";
+                btn6.className = "px-4 py-1.5 rounded-md text-xs font-medium text-stone-600 hover:text-stone-900";
+            } else {
+                btn6.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-700 text-white";
+                btn5.className = "px-4 py-1.5 rounded-md text-xs font-medium text-stone-600 hover:text-stone-900";
+            }
+
+            updateBudgetData();
+            updateCharts();
+        }
+
+        function updateBudgetData() {
+            const tableBody = document.getElementById('budget-table-body');
+            tableBody.innerHTML = '';
+
+            let grandTotalPerPerson = 0;
+
+            rawBudgetData.forEach(item => {
+                // If item is car-related, divider is always 5 (Cibinong car group)
+                // If item is 'all', divider is state.participantsCount (5 or 6)
+                const divider = item.sharedType === 'car' ? 5 : state.participantsCount;
+                const costPerPerson = Math.round(item.total / divider);
+                grandTotalPerPerson += costPerPerson;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-stone-50";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-stone-900">${item.name}</td>
+                    <td class="py-3 px-4 font-mono">Rp ${item.total.toLocaleString('id-ID')}</td>
+                    <td class="py-3 px-4 text-center font-bold text-emerald-800">${divider} Orang</td>
+                    <td class="py-3 px-4 font-mono font-bold text-stone-900">Rp ${costPerPerson.toLocaleString('id-ID')}</td>
+                    <td class="py-3 px-4 text-stone-500">${item.note}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Update Total Banner Displays
+            const totalText = "Rp " + grandTotalPerPerson.toLocaleString('id-ID');
+            document.getElementById('calculated-cost-per-person').innerText = totalText;
+            document.getElementById('header-cost-tag').innerText = totalText + " / org";
+        }
+
+        // ================= CHART.JS VISUALIZATIONS =================
+        function initCharts() {
+            // Categories for chart grouping
+            const transportTotal = rawBudgetData.filter(i => ['tol','bbm','kas_mobil','parkir'].includes(i.id)).reduce((a,b)=>a+b.total,0);
+            const villaTotal = rawBudgetData.filter(i => i.id==='villa').reduce((a,b)=>a+b.total,0);
+            const foodTourTotal = rawBudgetData.filter(i => ['jeep','tiket','bbq_villa','makan_luar'].includes(i.id)).reduce((a,b)=>a+b.total,0);
+            const emergencyTotal = rawBudgetData.filter(i => i.id==='darurat').reduce((a,b)=>a+b.total,0);
+
+            // Doughnut Chart
+            const ctxDoughnut = document.getElementById('budgetDoughnutChart').getContext('2d');
+            doughnutChart = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Transportasi & Mobil', 'Penginapan Villa', 'Kuliner & Wisata', 'Kas Darurat'],
+                    datasets: [{
+                        data: [transportTotal, villaTotal, foodTourTotal, emergencyTotal],
+                        backgroundColor: ['#047857', '#0D9488', '#D97706', '#E11D48'],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw || 0;
+                                    return ` ${context.label}: Rp ${val.toLocaleString('id-ID')}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bar Chart
+            const ctxBar = document.getElementById('budgetBarChart').getContext('2d');
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: rawBudgetData.map(i => i.name.substring(0, 16) + '...'),
+                    datasets: [{
+                        label: 'Nominal Rombongan (Rp)',
+                        data: rawBudgetData.map(i => i.total),
+                        backgroundColor: '#059669',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Rp ${context.raw.toLocaleString('id-ID')}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { font: { size: 9 }, callback: (v) => 'Rp ' + (v/1000) + 'k' }
+                        },
+                        y: {
+                            ticks: { font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (!doughnutChart || !barChart) return;
+            // Update labels or values if dynamic modifications occur
+            doughnutChart.update();
+            barChart.update();
+        }
+    </script>
+</body>
+</html>
