@@ -61,7 +61,7 @@
          2. Tabbed Navigation System:
             - Ringkasan & Komitmen: Core principles, safety promises, and document verification status.
             - Interaktif Itinerary: Interactive day-by-day filterable timeline with rain contingency toggle.
-            - Kalkulator & Budget: Interactive budget recalculator (5 vs 6 people) paired with Chart.js visualization.
+            - Kalkulator & Budget: Interactive budget recalculator (5 vs 6 people) with three kas scenarios (current vs 1.5jt lean) paired with Chart.js visualization.
             - Rute & Operasional: Visual route cluster diagram, driver shift schedule, and safety protocols.
             - Shortlist Villa & Wisata: Filterable accommodation cards and logic for eliminated spots.
             - Kontak & Emergency: One-touch emergency contacts & vendor phone directory.
@@ -100,7 +100,7 @@
                     </div>
                     <div class="text-center px-3 py-1 border-r border-emerald-800">
                         <span class="block text-emerald-400 font-bold">ESTIMASI BIAYA</span>
-                        <span id="header-cost-tag">Rp 2.300.000 / org</span>
+                        <span id="header-cost-tag">Rp 2.484.000 / org</span>
                     </div>
                     <div class="text-center px-3 py-1">
                         <span class="block text-emerald-400 font-bold">ARMADA</span>
@@ -395,7 +395,7 @@
             <div class="bg-stone-100 border-l-4 border-emerald-700 p-4 rounded-r-xl text-stone-700 text-sm leading-relaxed">
                 <h2 class="font-bold text-stone-900 text-base mb-1">💰 Transparansi Budget & Kalkulator Interaktif</h2>
                 <p>
-                    Setiap pengeluaran dicatat transparan oleh bendahara. Dana tol dan BBM disimulasikan dengan *buffer* aman. Sisa saldo kas akan dikembalikan utuh sesudah trip. Anda bisa mengubah jumlah peserta di bawah untuk melihat kalkulasi ulang pembagian biaya kas secara langsung.
+                    Setiap pengeluaran dicatat transparan oleh bendahara. Dana tol dan BBM disimulasikan dengan *buffer* aman. Sisa saldo kas akan dikembalikan utuh sesudah trip. Ubah jumlah peserta dan pilih skenario kas di bawah — termasuk dua opsi hemat menuju <strong>Rp 1.500.000 / orang</strong>. Uang saku mandiri Rp 300.000 tetap di luar setoran.
                 </p>
             </div>
 
@@ -411,9 +411,44 @@
 
                 <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-right w-full md:w-auto">
                     <span class="block text-[10px] font-bold text-emerald-800 uppercase">Setoran Kas Final Per Orang</span>
-                    <span id="calculated-cost-per-person" class="text-xl font-extrabold text-emerald-900">Rp 2.300.000</span>
-                    <span class="block text-[10px] text-emerald-700">+ Rp 300.000 (Uang Saku Mandiri)</span>
+                    <span id="calculated-cost-per-person" class="text-xl font-extrabold text-emerald-900">Rp 2.484.000</span>
+                    <span id="budget-saku-note" class="block text-[10px] text-emerald-700">+ Rp 300.000 (Uang Saku Mandiri)</span>
+                    <span id="budget-target-note" class="block text-[10px] text-amber-800 mt-0.5">Rp 984.000 di atas target 1,5 jt</span>
                 </div>
+            </div>
+
+            <!-- Scenario Cards -->
+            <div>
+                <h3 class="font-bold text-stone-900 text-base mb-3">🎯 Skenario Kas Menuju Rp 1.500.000 / Orang</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <button type="button" onclick="setBudgetScenario('current')" id="scenario-card-current" class="text-left bg-emerald-50 rounded-2xl p-4 shadow-sm border-2 border-emerald-700">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-emerald-800">Rencana Sekarang</span>
+                            <span class="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">Buffer aman</span>
+                        </div>
+                        <p id="scenario-amount-current" class="text-lg font-extrabold text-stone-900">Rp 2.484.000</p>
+                        <p class="text-[11px] text-stone-600 mt-1.5 leading-relaxed">Jeep, BBQ villa, 6 sesi makan, dan kas darurat 900 rb semua masuk setoran.</p>
+                    </button>
+                    <button type="button" onclick="setBudgetScenario('noJeep')" id="scenario-card-noJeep" class="text-left bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:border-emerald-400">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-stone-500">Hemat 1,5 Jt</span>
+                            <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Tanpa Jeep</span>
+                        </div>
+                        <p id="scenario-amount-noJeep" class="text-lg font-extrabold text-stone-900">Rp 1.500.000</p>
+                        <p class="text-[11px] text-stone-600 mt-1.5 leading-relaxed">Skip Jeep Minggu. Tetap pantai, villa, BBQ malam, Nglanggeran, dan sate Klathak.</p>
+                    </button>
+                    <button type="button" onclick="setBudgetScenario('keepJeep')" id="scenario-card-keepJeep" class="text-left bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:border-emerald-400">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-stone-500">Hemat 1,5 Jt</span>
+                            <span class="text-[10px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded">Tetap Jeep</span>
+                        </div>
+                        <p id="scenario-amount-keepJeep" class="text-lg font-extrabold text-stone-900">Rp 1.500.000</p>
+                        <p class="text-[11px] text-stone-600 mt-1.5 leading-relaxed">Jeep Minggu tetap. BBQ villa dihapus (siang sudah ikan bakar). Makan luar ketat warung.</p>
+                    </button>
+                </div>
+                <p id="scenario-blurb" class="text-xs text-stone-600 mt-3 leading-relaxed bg-stone-50 border border-stone-200 rounded-xl px-4 py-3">
+                    Pos mobil (tol, BBM, kas mobil, parkir) tetap dibagi 5 orang Cibinong. Villa, wisata, dan makan dibagi jumlah peserta yang dipilih.
+                </p>
             </div>
 
             <!-- Visual Charts Container (2 Charts side by side) -->
@@ -441,6 +476,7 @@
             <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
                 <div class="p-4 border-b border-stone-100">
                     <h3 class="font-bold text-stone-900 text-base">📋 Rincian Pos Pengeluaran Kas</h3>
+                    <p class="text-[11px] text-stone-500 mt-0.5">Mengikuti skenario yang dipilih. Pos Skip bernilai Rp 0. Uang saku Rp 300.000 tidak masuk tabel.</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-stone-700">
@@ -794,9 +830,12 @@
         const state = {
             activeTab: 'overview',
             participantsCount: 5,
+            budgetScenario: 'current',
             currentDayFilter: 'all',
             weatherMode: false
         };
+
+        const BUDGET_TARGET_PER_PERSON = 1500000;
 
         // ================= ITINERARY DATA SOURCE =================
         const itineraryData = [
@@ -1019,17 +1058,129 @@
         ];
 
         // ================= BUDGET DATA BASE =================
+        const budgetScenarios = {
+            current: {
+                blurb: 'Rencana sekarang memakai buffer aman di tol, BBM, tiket, makan, dan kas darurat. Catatan makan “Rp 40rb / sesi” tidak cocok dengan total 2,4 jt (setara ~Rp 80rb/orang/sesi untuk 5 orang).'
+            },
+            noJeep: {
+                blurb: 'Hemat tanpa Jeep: skip paket Minggu, pangkas buffer transport, villa kelas Arimbi, makan ~Rp 40rb/sesi, kas darurat 400 rb. Pantai, BBQ malam, Nglanggeran, dan sate Klathak tetap ada.'
+            },
+            keepJeep: {
+                blurb: 'Hemat tetap Jeep: paket Minggu tetap. BBQ villa dihapus karena siang sudah ikan bakar. Makan luar ketat warung + satu sate Klathak. Pas di plafon 1,5 jt untuk 5 orang.'
+            }
+        };
+
         const rawBudgetData = [
-            { id: 'tol', name: 'Tol PP (Cibinong – Prambanan)', sharedType: 'car', total: 1500000, note: 'Acuan Tarif Tol Resmi 2026' },
-            { id: 'bbm', name: 'BBM Mobil PP (±1.400 km)', sharedType: 'car', total: 2000000, note: 'Estimasi Konsumsi BBM Mobil' },
-            { id: 'kas_mobil', name: 'Kas Perawatan Mobil (Oli & Keausan)', sharedType: 'car', total: 600000, note: 'Distribusi Pemakaian Mobil' },
-            { id: 'parkir', name: 'Parkir & Retribusi Jalan', sharedType: 'car', total: 200000, note: 'Estimasi Parkir Lokal' },
-            { id: 'villa', name: 'Sewa Villa (2 Malam)', sharedType: 'all', total: 2000000, note: 'Maks Rp 1 Juta / Malam' },
-            { id: 'jeep', name: 'Jeep Jajah Deso + BBQ Ikan', sharedType: 'all', total: 1050000, note: 'Paket Konsumsi & Driver Jeep' },
-            { id: 'tiket', name: 'Tiket Wisata, Kafe, & Parkir', sharedType: 'all', total: 1170000, note: 'Estimasi Tiket Masuk' },
-            { id: 'bbq_villa', name: 'Bahan BBQ Villa (Ikan, Ayam, Arang)', sharedType: 'all', total: 600000, note: 'Belanja Logistik Mandiri' },
-            { id: 'makan_luar', name: 'Makan Luar Paket (6 Sesi)', sharedType: 'all', total: 2400000, note: 'Estimasi Rp 40rb / Makan' },
-            { id: 'darurat', name: 'Kas Darurat Bersama', sharedType: 'all', total: 900000, note: 'Dana Cadangan (Sisa Kembali)' }
+            {
+                id: 'tol',
+                name: 'Tol PP (Cibinong – Prambanan)',
+                sharedType: 'car',
+                amounts: { current: 1500000, noJeep: 1200000, keepJeep: 1200000 },
+                notes: {
+                    current: 'Acuan Tarif Tol Resmi 2026 + buffer',
+                    noJeep: 'Buffer dipangkas; acuan tarif riil PP ~1–1,2 jt',
+                    keepJeep: 'Buffer dipangkas; acuan tarif riil PP ~1–1,2 jt'
+                }
+            },
+            {
+                id: 'bbm',
+                name: 'BBM Mobil PP (±1.400 km)',
+                sharedType: 'car',
+                amounts: { current: 2000000, noJeep: 1700000, keepJeep: 1700000 },
+                notes: {
+                    current: 'Estimasi Konsumsi BBM Mobil + cadangan',
+                    noJeep: 'Pertamax ~12 km/l untuk ±1.400 km',
+                    keepJeep: 'Pertamax ~12 km/l untuk ±1.400 km'
+                }
+            },
+            {
+                id: 'kas_mobil',
+                name: 'Kas Perawatan Mobil (Oli & Keausan)',
+                sharedType: 'car',
+                amounts: { current: 600000, noJeep: 400000, keepJeep: 400000 },
+                notes: {
+                    current: 'Distribusi Pemakaian Mobil',
+                    noJeep: 'Nego dengan pemilik mobil',
+                    keepJeep: 'Nego dengan pemilik mobil'
+                }
+            },
+            {
+                id: 'parkir',
+                name: 'Parkir & Retribusi Jalan',
+                sharedType: 'car',
+                amounts: { current: 200000, noJeep: 100000, keepJeep: 100000 },
+                notes: {
+                    current: 'Estimasi Parkir Lokal',
+                    noJeep: 'Retribusi pantai masuk pos tiket',
+                    keepJeep: 'Retribusi pantai masuk pos tiket'
+                }
+            },
+            {
+                id: 'villa',
+                name: 'Sewa Villa (2 Malam)',
+                sharedType: 'all',
+                amounts: { current: 2000000, noJeep: 1600000, keepJeep: 1600000 },
+                notes: {
+                    current: 'Maks Rp 1 Juta / Malam',
+                    noJeep: 'Target kelas Arimbi, di bawah plafon 1 jt/malam',
+                    keepJeep: 'Target kelas Arimbi, di bawah plafon 1 jt/malam'
+                }
+            },
+            {
+                id: 'jeep',
+                name: 'Jeep Jajah Deso + BBQ Ikan',
+                sharedType: 'all',
+                amounts: { current: 1050000, noJeep: 0, keepJeep: 1050000 },
+                notes: {
+                    current: 'Paket Konsumsi & Driver Jeep',
+                    noJeep: 'Skip — hemat tanpa paket Jeep Minggu',
+                    keepJeep: 'Paket Konsumsi & Driver Jeep tetap'
+                }
+            },
+            {
+                id: 'tiket',
+                name: 'Tiket Wisata, Kafe, & Parkir',
+                sharedType: 'all',
+                amounts: { current: 1170000, noJeep: 450000, keepJeep: 400000 },
+                notes: {
+                    current: 'Estimasi Tiket Masuk + kafe + buffer',
+                    noJeep: 'Retribusi pantai & Nglanggeran saja',
+                    keepJeep: 'Retribusi pantai & Nglanggeran saja'
+                }
+            },
+            {
+                id: 'bbq_villa',
+                name: 'Bahan BBQ Villa (Ikan, Ayam, Arang)',
+                sharedType: 'all',
+                amounts: { current: 600000, noJeep: 450000, keepJeep: 0 },
+                notes: {
+                    current: 'Belanja Logistik Mandiri',
+                    noJeep: 'Satu malam BBQ di villa',
+                    keepJeep: 'Skip — BBQ siang Jeep sudah include'
+                }
+            },
+            {
+                id: 'makan_luar',
+                name: 'Makan Luar Paket (6 Sesi)',
+                sharedType: 'all',
+                amounts: { current: 2400000, noJeep: 1200000, keepJeep: 750000 },
+                notes: {
+                    current: 'Total setara ~Rp 80rb/orang/sesi (5 orang), bukan Rp 40rb',
+                    noJeep: '6 sesi × ~Rp 40rb / orang',
+                    keepJeep: 'Warung + satu sate Klathak'
+                }
+            },
+            {
+                id: 'darurat',
+                name: 'Kas Darurat Bersama',
+                sharedType: 'all',
+                amounts: { current: 900000, noJeep: 400000, keepJeep: 300000 },
+                notes: {
+                    current: 'Dana Cadangan (Sisa Kembali)',
+                    noJeep: 'Cadangan lebih ramping (sisa kembali)',
+                    keepJeep: 'Cadangan minimal (sisa kembali)'
+                }
+            }
         ];
 
         // Chart instances
@@ -1155,6 +1306,38 @@
         }
 
         // ================= BUDGET CALCULATOR LOGIC =================
+        function formatRp(n) {
+            return "Rp " + Math.round(n).toLocaleString('id-ID');
+        }
+
+        function getScenarioRows(scenarioId) {
+            const key = scenarioId || state.budgetScenario;
+            return rawBudgetData.map(item => ({
+                id: item.id,
+                name: item.name,
+                sharedType: item.sharedType,
+                total: item.amounts[key],
+                note: item.notes[key]
+            }));
+        }
+
+        function calcPerPerson(rows, n) {
+            return rows.reduce((sum, item) => {
+                const divider = item.sharedType === 'car' ? 5 : n;
+                return sum + Math.round(item.total / divider);
+            }, 0);
+        }
+
+        function getChartCategoryTotals(rows) {
+            const sumIds = (ids) => rows.filter(i => ids.includes(i.id)).reduce((a, b) => a + b.total, 0);
+            return {
+                transport: sumIds(['tol', 'bbm', 'kas_mobil', 'parkir']),
+                villa: sumIds(['villa']),
+                foodTour: sumIds(['jeep', 'tiket', 'bbq_villa', 'makan_luar']),
+                emergency: sumIds(['darurat'])
+            };
+        }
+
         function setParticipants(num) {
             state.participantsCount = num;
             const btn5 = document.getElementById('part-5-btn');
@@ -1172,53 +1355,93 @@
             updateCharts();
         }
 
+        function setBudgetScenario(scenarioId) {
+            state.budgetScenario = scenarioId;
+            updateBudgetData();
+            updateCharts();
+        }
+
+        function updateScenarioCards(n) {
+            ['current', 'noJeep', 'keepJeep'].forEach(id => {
+                const amount = calcPerPerson(getScenarioRows(id), n);
+                const amountEl = document.getElementById('scenario-amount-' + id);
+                if (amountEl) amountEl.innerText = formatRp(amount);
+
+                const card = document.getElementById('scenario-card-' + id);
+                if (!card) return;
+                const active = id === state.budgetScenario;
+                card.className = active
+                    ? "text-left bg-emerald-50 rounded-2xl p-4 shadow-sm border-2 border-emerald-700"
+                    : "text-left bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:border-emerald-400";
+            });
+
+            const blurb = document.getElementById('scenario-blurb');
+            if (blurb) blurb.innerText = budgetScenarios[state.budgetScenario].blurb;
+        }
+
         function updateBudgetData() {
             const tableBody = document.getElementById('budget-table-body');
             tableBody.innerHTML = '';
 
+            const n = state.participantsCount;
+            const rows = getScenarioRows();
             let grandTotalPerPerson = 0;
 
-            rawBudgetData.forEach(item => {
-                // If item is car-related, divider is always 5 (Cibinong car group)
-                // If item is 'all', divider is state.participantsCount (5 or 6)
-                const divider = item.sharedType === 'car' ? 5 : state.participantsCount;
+            rows.forEach(item => {
+                const divider = item.sharedType === 'car' ? 5 : n;
                 const costPerPerson = Math.round(item.total / divider);
                 grandTotalPerPerson += costPerPerson;
+                const skipped = item.total === 0;
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-stone-50";
+                tr.className = skipped ? "bg-stone-50 text-stone-400" : "hover:bg-stone-50";
+                const nameCell = skipped
+                    ? `<span class="line-through">${item.name}</span> <span class="ml-1 text-[10px] font-bold uppercase bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded">Skip</span>`
+                    : item.name;
+                const totalCell = skipped ? "Skip" : formatRp(item.total);
+                const costCell = skipped ? "—" : formatRp(costPerPerson);
+
                 tr.innerHTML = `
-                    <td class="py-3 px-4 font-semibold text-stone-900">${item.name}</td>
-                    <td class="py-3 px-4 font-mono">Rp ${item.total.toLocaleString('id-ID')}</td>
+                    <td class="py-3 px-4 font-semibold ${skipped ? 'text-stone-400' : 'text-stone-900'}">${nameCell}</td>
+                    <td class="py-3 px-4 font-mono">${totalCell}</td>
                     <td class="py-3 px-4 text-center font-bold text-emerald-800">${divider} Orang</td>
-                    <td class="py-3 px-4 font-mono font-bold text-stone-900">Rp ${costPerPerson.toLocaleString('id-ID')}</td>
+                    <td class="py-3 px-4 font-mono font-bold ${skipped ? 'text-stone-400' : 'text-stone-900'}">${costCell}</td>
                     <td class="py-3 px-4 text-stone-500">${item.note}</td>
                 `;
                 tableBody.appendChild(tr);
             });
 
-            // Update Total Banner Displays
-            const totalText = "Rp " + grandTotalPerPerson.toLocaleString('id-ID');
+            const totalText = formatRp(grandTotalPerPerson);
             document.getElementById('calculated-cost-per-person').innerText = totalText;
             document.getElementById('header-cost-tag').innerText = totalText + " / org";
+
+            const gap = grandTotalPerPerson - BUDGET_TARGET_PER_PERSON;
+            const targetNote = document.getElementById('budget-target-note');
+            if (targetNote) {
+                if (gap > 0) {
+                    targetNote.innerText = formatRp(gap) + " di atas target 1,5 jt";
+                    targetNote.className = "block text-[10px] text-amber-800 mt-0.5";
+                } else {
+                    targetNote.innerText = "Muat di target Rp 1.500.000 / orang";
+                    targetNote.className = "block text-[10px] text-emerald-800 mt-0.5";
+                }
+            }
+
+            updateScenarioCards(n);
         }
 
         // ================= CHART.JS VISUALIZATIONS =================
         function initCharts() {
-            // Categories for chart grouping
-            const transportTotal = rawBudgetData.filter(i => ['tol','bbm','kas_mobil','parkir'].includes(i.id)).reduce((a,b)=>a+b.total,0);
-            const villaTotal = rawBudgetData.filter(i => i.id==='villa').reduce((a,b)=>a+b.total,0);
-            const foodTourTotal = rawBudgetData.filter(i => ['jeep','tiket','bbq_villa','makan_luar'].includes(i.id)).reduce((a,b)=>a+b.total,0);
-            const emergencyTotal = rawBudgetData.filter(i => i.id==='darurat').reduce((a,b)=>a+b.total,0);
+            const rows = getScenarioRows();
+            const cats = getChartCategoryTotals(rows);
 
-            // Doughnut Chart
             const ctxDoughnut = document.getElementById('budgetDoughnutChart').getContext('2d');
             doughnutChart = new Chart(ctxDoughnut, {
                 type: 'doughnut',
                 data: {
                     labels: ['Transportasi & Mobil', 'Penginapan Villa', 'Kuliner & Wisata', 'Kas Darurat'],
                     datasets: [{
-                        data: [transportTotal, villaTotal, foodTourTotal, emergencyTotal],
+                        data: [cats.transport, cats.villa, cats.foodTour, cats.emergency],
                         backgroundColor: ['#047857', '#0D9488', '#D97706', '#E11D48'],
                         borderWidth: 2,
                         borderColor: '#FFFFFF'
@@ -1241,15 +1464,14 @@
                 }
             });
 
-            // Bar Chart
             const ctxBar = document.getElementById('budgetBarChart').getContext('2d');
             barChart = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
-                    labels: rawBudgetData.map(i => i.name.substring(0, 16) + '...'),
+                    labels: rows.map(i => i.name.substring(0, 16) + '...'),
                     datasets: [{
                         label: 'Nominal Rombongan (Rp)',
-                        data: rawBudgetData.map(i => i.total),
+                        data: rows.map(i => i.total),
                         backgroundColor: '#059669',
                         borderRadius: 6
                     }]
@@ -1282,7 +1504,11 @@
 
         function updateCharts() {
             if (!doughnutChart || !barChart) return;
-            // Update labels or values if dynamic modifications occur
+            const rows = getScenarioRows();
+            const cats = getChartCategoryTotals(rows);
+            doughnutChart.data.datasets[0].data = [cats.transport, cats.villa, cats.foodTour, cats.emergency];
+            barChart.data.labels = rows.map(i => i.name.substring(0, 16) + '...');
+            barChart.data.datasets[0].data = rows.map(i => i.total);
             doughnutChart.update();
             barChart.update();
         }
